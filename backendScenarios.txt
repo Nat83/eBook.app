@@ -1,0 +1,252 @@
+
+APP URL: https://ta-bookrental-fe.onrender.com/login
+
+BACKEND SCENARIOS:
+
+---------------------------------------------------
+
+Feature: Login page options
+
+  Background: As a user I want to be able to use all the functionality of login page so I can register
+  or log in to the system
+
+  Scenario Outline: It is possible to register new user
+    Given I am on login page
+    When I click on sign up button
+    When I send POST request <endpoint> with given values in request body <login> and <password>
+    Then the server returns code <serverCode>
+    And There is "new" flag in response body set to <boolean>
+    Examples:
+      | login        | password     | serverCode | endpoint                                       | boolean |
+      | kodillA      | kodillA      | 200        | https://ta-bookrental-fe.onrender.com/register | true    |
+      | kodill@      | kodill@      | 200        | https://ta-bookrental-fe.onrender.com/register | true    |
+      | nat_kodilla1 | nat_kodilla1 | 200        | https://ta-bookrental-fe.onrender.com/register | true    |
+
+  Scenario Outline: It is not possible to register user who is already registered in teh system
+    Given I am on login page
+    When I click on sign up button
+    When I send POST request <endpoint> with given values in request body <login> and <password>
+    When I send POST request <endpoint> with given values in request body <login> and <password>
+    Then the server returns code <serverCode>
+    And There is "new" flag in response body set to <boolean>
+    Examples:
+      | login   | password | serverCode | endpoint                                       | boolean |
+      | kodillA | kodillA  | 200        | https://ta-bookrental-fe.onrender.com/register | false   |
+      | kodill@ | kodill@  | 200        | https://ta-bookrental-fe.onrender.com/register | false   |
+      | kodill1 | kodill1  | 200        | https://ta-bookrental-fe.onrender.com/register | false   |
+
+  Scenario Outline: It is possible to log in with newly created user user
+    Given I am on login page
+    When I click on sign up button
+    When I send POST request <endpoint> with given values in request body <login> and <password>
+    When I click on LOG IN button on register page
+    When I send POST request <endpoint2> with given values in request body <login> and <password>
+    Then the server returns code <serverCode>
+    Examples:
+      | login    | password | serverCode | endpoint                                       | endpoint2                                                       |
+      | kodillAb | kodillAb | 200        | https://ta-bookrental-fe.onrender.com/register | https://ta-ebookrental.kodillaadministrators.repl.co/user/login |
+      | kodill@1 | kodill@1 | 200        | https://ta-bookrental-fe.onrender.com/register | https://ta-ebookrental.kodillaadministrators.repl.co/user/login |
+
+  Scenario Outline: It is possible to log in with correct password and login
+    Given I am on login page
+    When I send POST request <endpoint> with given values in request body <login> and <password>
+    Then the server returns code <serverCode>
+    And There is Id user number returned in response body
+    Examples:
+      | login    | password | serverCode | endpoint                                                        |
+      | kodillAb | kodillAb | 200        | https://ta-ebookrental.kodillaadministrators.repl.co/user/login |
+      | kodill@1 | kodill@1 | 200        | https://ta-ebookrental.kodillaadministrators.repl.co/user/login |
+
+
+  Scenario Outline: It is not possible to log in with incorrect login or incorrect password or both
+    Given I am on login page
+    When I send POST request <endpoint> with given values in request body <login> and <password>
+    Then the server returns code <serverCode>
+    Examples:
+      | login    | password | serverCode | endpoint                                                        |
+      | kodillAb | aaa      | 401        | https://ta-ebookrental.kodillaadministrators.repl.co/user/login |
+      | aaa@1    | kodill@1 | 401        | https://ta-ebookrental.kodillaadministrators.repl.co/user/login |
+
+-------------------------------------------------
+
+
+Feature: Title list functionalities
+
+  Background: As a user who is logged it to application I want to be able to use all functionalities from Title list page.
+    I want to be able to add, edit , remove books and view all books on my list.
+
+  Scenario Outline: It is possible to add book position
+    Given I log in to the application as user with <login> and <password>
+    When I click ADD NEW
+    When I send POST request <endpoint> with given values in request body <author> ,<title>, <userId> and <year>
+    Then the server returns code <serverCode>
+    And There is book Id returned in the response body
+    Examples:
+      | login    | password | endpoint                                                     | author            | title       | userId | year | serverCode |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | Adam Mickiewicz   | Pan Tadeusz | 615    | 2000 | 200        |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | Witold Gombrowicz | Ferdydurke  | 615    | 1987 | 200        |
+
+  Scenario Outline: Added book is visible on title list
+    Given I log in to the application as user with <login> and <password>
+    When I click ADD NEW
+    When I send POST request <endpoint> with given values in request body <author> ,<title>, <userId> and <year>
+    And There is book Id returned in the response body https://ta-ebookrental.kodillaadministrators.repl.co/titles/?userId=<userId>
+    Examples:
+      | login    | password | endpoint                                                     | author         | title          | userId | year |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | Boleslaw Prus  | lalka          | 615    | 2000 |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | dam Mickiewicz | Dziady czesc I | 615    | 1987 |
+
+  Scenario Outline: It should not be possible to add book when giving incorrect userId
+    Given I log in to the application as user with <login> and <password>
+    When I click ADD NEW
+    When I send POST request <endpoint> with given values in request body <author> ,<title>, <userId> and <year>
+    Then the server returns code <serverCode>
+    And There is book Id returned in the response body
+    Examples:
+      | login    | password | endpoint                                                     | author            | title       | userId | year | serverCode |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | Adam Mickiewicz   | Pan Tadeusz | 617    | 2000 | 200        |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | Witold Gombrowicz | Ferdydurke  | 618    | 1987 | 200        |
+
+  Scenario Outline: It should be possible to edit book
+    Given I log in to the application as user with <login> and <password>
+    When I send PUT request <endpoint> with given values in request body <author> ,<title>, <userId> , <year> and <id>
+    Then the server returns code <serverCode>
+    Examples:
+      | login    | password | endpoint                                                     | author            | title       | userId | year | id  | serverCode |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | Adam Mickiewicz   | Pan Tadeusz | 615    | 2001 | 621 | 200        |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | Witold Gombrowicz | Ferdydurke  | 615    | 1987 | 622 | 200        |
+
+  Scenario Outline: It should be possible to remove book
+    Given I log in to the application as user with <login> and <password>
+    When I click ADD NEW
+    When I send POST request <endpoint> with given values in request body <author> ,<title>, <userId> and <year>
+    Then I send DELETE request <endpoint2> using in payload <userid> book Id generated in previous step
+    Then the server returns code <serverCode>
+    Examples:
+      | login    | password | endpoint                                                     | endpoint2                                                                                    | author            | title       | userId | year | serverCode |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | https://ta-ebookrental.kodillaadministrators.repl.co/titles/?userId=615&id=<generatedBookId> | Adam Mickiewicz   | Pan Tadeusz | 615    | 2001 | 200        |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | https://ta-ebookrental.kodillaadministrators.repl.co/titles/?userId=615&id=<generatedBookId> | Witold Gombrowicz | Ferdydurke  | 615    | 1987 | 200        |
+
+  Scenario Outline: It should be possible to remove book
+    Given I log in to the application as user with <login> and <password>
+    When I click ADD NEW
+    When I send POST request <endpoint> with given values in request body <author> ,<title>, <userId> and <year>
+    Then I send DELETE request <endpoint2> using in payload <userid> book Id generated in previous step
+    Then the server returns code <serverCode>
+    Examples:
+      | login    | password | endpoint                                                     | endpoint2                                                                                    | author            | title       | userId | year | serverCode |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | https://ta-ebookrental.kodillaadministrators.repl.co/titles/?userId=615&id=<generatedBookId> | Adam Mickiewicz   | Pan Tadeusz | 615    | 2001 | 200        |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/ | https://ta-ebookrental.kodillaadministrators.repl.co/titles/?userId=615&id=<generatedBookId> | Witold Gombrowicz | Ferdydurke  | 615    | 1987 | 200        |
+
+  Scenario Outline: It should be possible to return title list
+    Given I log in to the application as user with <login> and <password>
+    When I send GET request <endpoint> with given values in request body <author> ,<title>, <userId> and <year>
+    Then the server returns code <serverCode>
+    And Endpoint response shouel display list of added books
+    Examples:
+      | login    | password | endpoint                                                     |
+      | kodilla1 | kodilla1 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/?userId=615 |
+      | kodilla2 | kodilla2 | https://ta-ebookrental.kodillaadministrators.repl.co/titles/?userId=616 |
+
+------------------------------------------------
+
+Feature: Copies list functionality
+
+  Background: As a user who is logged it to application and has some books added to the system, I want to be able to
+  use all functionalities from Copies list page.
+  I want to be able to add, edit , remove copies of the books and view all copies of chosen book on one list.
+
+  Scenario Outline: It is possible to display copies list of chosen book
+    Given I log in to the application as user with <login> and <password>
+    When I navigate to copy list for the book with <titleId> using GET <endpoint>
+    Then The server returns code <serverCode>
+    And There is list of copies displayed for book with <titleId>
+    Examples:
+      | login    | password | titleId | endpoint                                                                          | serverCode |
+      | kodilla1 | kodilla1 | 630     | https://ta-ebookrental.kodillaadministrators.repl.co/rents/?userId=615&itemId=630 | 200        |
+
+
+  Scenario Outline: It is possible to add copy of book
+    Given I log in to the application as user with <login> and <password>
+    When I navigate to copy list for the book with <titleId>
+    When I send POST request <endpoint> with given values in request body <purchaseDate> ,<titleId>, <userId>
+    Then The server returns code <serverCode>
+    And In response body there is copy id generated
+    And Added copy appears on the copies list
+    Examples:
+      | login    | password | titleId | endpoint                                                    | purchaseDate | userId | serverCode |
+      | kodilla1 | kodilla1 | 629     | https://ta-ebookrental.kodillaadministrators.repl.co/items/ | 2023-06-20   | 615    | 200        |
+
+  Scenario Outline: It is possible to edit copy of book
+    Given I log in to the application as user with <login> and <password>
+    When I navigate to copy list for the book with <titleId>
+    When I send PUT request <endpoint> with given values in request body <purchaseDate> ,<titleId>, <userId> and <copyId>
+    Then the server returns code <serverCode>
+    And Purchase date of the copy is correctly updated
+    Examples:
+      | login    | password | titleId | endpoint                                                    | purchaseDate | userId | serverCode | copyId |
+      | kodilla1 | kodilla1 | 629     | https://ta-ebookrental.kodillaadministrators.repl.co/items/ | 2023-06-19   | 615    | 200        | 633    |
+
+  Scenario Outline: It is possible to delete copy of book
+    Given I log in to the application as user with <login> and <password>
+    When I navigate to copy list for the book with <titleId>
+    When I send DELETE request <endpoint> with given values in request body <userId> and <copyId>
+    Then the server returns code <serverCode>
+    And Removed copy is disparaging from copies lists
+    Examples:
+      | login    | password | titleId | endpoint                                                                      | userId | serverCode | copyId |
+      | kodilla1 | kodilla1 | 629     | https://ta-ebookrental.kodillaadministrators.repl.co/items/?userId=615&id=633 | 615    | 200        | 633    |
+
+------------------------------------------------------------------------
+Feature: Rental list functionality
+
+  Background: As a user who is logged it to application and has some books added to the system, I want to be able to
+  use all functionalities from Rental list page.
+  I want to be able to add, edit , remove rental records of chosen copy of the book.
+
+  Scenario Outline: It is possible to display rental history of chosen copy of book.
+    Given I log in to the application as user with <login> and <password>
+    When I navigate to copy list for the book with <titleId>
+    When I navigate to rental list for chosen copy with <itemId> using GET <endpoint>
+    Then The server returns code <serverCode>
+    And There is list of rental history displayed.
+    Examples:
+      | login    | password | titleId | endpoint                                                                          | itemId | serverCode |
+      | kodilla1 | kodilla1 | 635     | https://ta-ebookrental.kodillaadministrators.repl.co/rents/?userId=615&itemId=638 | 638    | 200        |
+
+
+  Scenario Outline: It is possible to add rental record
+    Given I log in to the application as user with <login> and <password>
+    When I navigate to copy list for the book with <titleId>
+    When I navigate to rental list for chosen copy with <itemId>
+    When I send POST request <endpoint> with given values in request body <customerName> ,<itemId> and <rentDate>
+    Then The server returns code <serverCode>
+    And In response body there is rental record id generated
+    And Added record is visible on the list
+    Examples:
+      | login    | password | titleId | endpoint                                                    | itemId | customerName | rentDate   | serverCode |
+      | kodilla1 | kodilla1 | 635     | https://ta-ebookrental.kodillaadministrators.repl.co/rents/ | 638    | Natalia      | 2023-06-20 | 200        |
+
+  Scenario Outline: It is possible to update rental record
+    Given I log in to the application as user with <login> and <password>
+    When I navigate to copy list for the book with <titleId>
+    When I navigate to rental list for chosen copy with <itemId>
+    When I send PUT request <endpoint> with given values in request body <customerName> , <rentDate> and <expirationDate> and <id>
+    Then the server returns code <serverCode>
+    And Rental record is correctly updated with expiration date
+    Examples:
+      | login    | password | titleId | endpoint                                                    | itemId | customerName | rentDate   | expirationDate | id  | serverCode |
+      | kodilla1 | kodilla1 | 635     | https://ta-ebookrental.kodillaadministrators.repl.co/rents/ | 638    | Natalia      | 2023-06-20 | 2023-07-20     | 642 | 200        |
+
+  Scenario Outline: It is possible to delete rental record
+    Given I log in to the application as user with <login> and <password>
+    When I navigate to copy list for the book with <titleId>
+    When I navigate to rental list for chosen copy with <itemId>
+    When I send DELETE request <endpoint> with given values in request body <userId> and <id>
+    Then the server returns code <serverCode>
+    And Removed rental record is disparaging from rental lists
+    Examples:
+      | login    | password | titleId | endpoint                                                                      | userId | id  | serverCode |
+      | kodilla1 | kodilla1 | 635     | https://ta-ebookrental.kodillaadministrators.repl.co/rents/?userId=615&id=641 | 615    | 241 | 200        |
+
+
